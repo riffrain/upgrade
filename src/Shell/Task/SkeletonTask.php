@@ -54,11 +54,15 @@ class SkeletonTask extends BaseTask {
 			'phpunit.xml.dist',
 			'index.php',
 			'webroot' . DS . 'index.php',
+			'config' . DS . 'bootstrap.php',
+			'config' . DS . 'bootstrap_cli.php',
 			'config' . DS . 'paths.php',
+			'config' . DS . 'routes.php',
 			'tests' . DS . 'bootstrap.php',
 			'src' . DS . 'Template' . DS . 'Error' . DS . 'error400.ctp',
 			'src' . DS . 'Template' . DS . 'Error' . DS . 'error500.ctp',
-			'src' . DS . 'Template' . DS . 'Layout' . DS . 'error.ctp'
+			'src' . DS . 'Template' . DS . 'Layout' . DS . 'error.ctp',
+			'src' . DS . 'Controller' . DS . 'PagesController.php',
 		);
 		$ret = 0;
 		foreach ($files as $file) {

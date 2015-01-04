@@ -41,21 +41,20 @@ class UpgradeShell extends Shell {
 		'RenameClasses',
 		'RenameCollections',
 		'Stage',
-		'UpdateMethodNames',
+		'MethodNames',
+		'MethodSignatures',
 		'I18n',
 		'Tests',
 		'Skeleton',
-		'Templates'
+		'PrefixedTemplates',
 	);
 
 /**
- * Main command.
- *
- * Careful: this will only work without any options.
+ * All command.
  *
  * @return void
  */
-	public function main() {
+	public function all() {
 		if (!empty($this->params['dry-run'])) {
 			$this->out('<warning>Dry-run mode enabled!</warning>', 1, Shell::QUIET);
 		}
@@ -84,7 +83,7 @@ class UpgradeShell extends Shell {
 /**
  * _getActions
  *
- * If the main function is called, derive which tasks to call, and in what order based on the
+ * If the all function is called, derive which tasks to call, and in what order based on the
  * option parser info
  *
  * @return array
@@ -93,7 +92,7 @@ class UpgradeShell extends Shell {
 		$all = [];
 		foreach ($this->OptionParser->subcommands() as $command) {
 			$name = $command->name();
-			if ($name === 'all') {
+			if ($name === 'all' || $name === 'skeleton') {
 				continue;
 			}
 			$className = ucfirst(Inflector::camelize($name));
@@ -108,7 +107,7 @@ class UpgradeShell extends Shell {
  * @return ConsoleOptionParser
  */
 	public function getOptionParser() {
-		return parent::getOptionParser()
+		$parser = parent::getOptionParser()
 			->description('A shell to help automate upgrading from CakePHP 2.x to 3.x. ' .
 				'Be sure to have a backup of your application before running these commands.'
 			)
@@ -132,30 +131,49 @@ class UpgradeShell extends Shell {
 				'help' => 'Rename HelperCollection, ComponentCollection, and TaskCollection. Will also rename component constructor arguments and _Collection properties on all objects.',
 				'parser' => $this->RenameCollections->getOptionParser(),
 			])
-			->addSubcommand('skeleton', [
-				'help' => 'Add basic skeleton files and folders from the "app" repository.',
-				'parser' => $this->Skeleton->getOptionParser(),
-			])
 			->addSubcommand('update_method_names', [
 				'help' => 'Update many of the methods that were renamed during 2.x -> 3.0',
-				'parser' => $this->UpdateMethodNames->getOptionParser(),
+				'parser' => $this->MethodNames->getOptionParser(),
+			])
+			->addSubcommand('update_method_signatures', [
+				'help' => 'Update many of the method signatures that were changed during 2.x -> 3.0',
+				'parser' => $this->MethodSignatures->getOptionParser(),
 			])
 			->addSubcommand('fixtures', [
 				'help' => 'Update fixtures to use new index/constraint features. This is necessary before running tests.',
 				'parser' => $this->Fixtures->getOptionParser(),
 			])
-			->addSubcommand('templates', [
-				'help' => 'Update view templates.',
-				'parser' => $this->Templates->getOptionParser(),
+			->addSubcommand('tests', [
+				'help' => 'Update test cases regarding fixtures.',
+				'parser' => $this->I18n->getOptionParser(),
 			])
 			->addSubcommand('i18n', [
 				'help' => 'Update translation functions regarding placeholders.',
 				'parser' => $this->I18n->getOptionParser(),
 			])
-			->addSubcommand('tests', [
-				'help' => 'Update test cases regarding fixtures.',
-				'parser' => $this->I18n->getOptionParser(),
+			->addSubcommand('skeleton', [
+				'help' => 'Add basic skeleton files and folders from the "app" repository.',
+				'parser' => $this->Skeleton->getOptionParser(),
+			])
+			->addSubcommand('prefixed_templates', [
+				'help' => 'Move view templates for prefixed actions.',
+				'parser' => $this->PrefixedTemplates->getOptionParser(),
 			]);
+
+		$subcommands = $parser->subcommands();
+		$allParser = null;
+		foreach ($subcommands as $subcommand) {
+			if ($allParser === null) {
+				$allParser = $subcommand->parser();
+				continue;
+			}
+			$allParser->merge($subcommand->parser());
+		}
+
+		return $parser->addSubcommand('all', [
+			'help' => 'Run all tasks expect for skeleton. That task should only be run manually, and only for apps (not plugins).',
+			'parser' => $allParser,
+		]);
 	}
 
 }

@@ -64,11 +64,13 @@ class UpgradeShellTest extends TestCase {
 			'Shell/Task/AppUsesTask.php',
 			'Shell/Task/FixturesTask.php',
 			'Shell/Task/RenameClassesTask.php',
-			'Shell/Task/UpdateMethodNamesTask.php',
+			'Shell/Task/MethodNamesTask.php',
+			'Shell/Task/MethodSignaturesTask.php',
 			'Shell/Task/ChangeTrait.php',
 			'Shell/Task/LocationsTask.php',
 			'Shell/Task/I18nTask.php',
-			'Shell/Task/SkeletonTask.php'
+			'Shell/Task/SkeletonTask.php',
+			'Shell/Task/PrefixedTemplatesTask.php',
 		];
 
 		sort($files);
