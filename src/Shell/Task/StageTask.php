@@ -126,6 +126,7 @@ class StageTask extends Shell {
 		}
 
 		$gitCd = sprintf('cd %s && ', escapeshellarg(dirname($path)));
+		$svnCd = sprintf('cd %s && ', escapeshellarg(dirname($path)));
 
 		if ($isDelete) {
 			$this->out(
@@ -140,6 +141,11 @@ class StageTask extends Shell {
 
 			if (!empty($this->params['git'])) {
 				exec($gitCd . sprintf('git rm -f %s', escapeshellarg($path)));
+				return true;
+			}
+
+			if (!empty($this->params['svn'])) {
+				exec($svnCd . sprintf('svn delete %s', escapeshellarg($path)));
 				return true;
 			}
 
@@ -162,11 +168,18 @@ class StageTask extends Shell {
 				)
 			);
 			if ($dryRun || !file_exists($path)) {
+				if ($dryRun) {
+					return $this->_svnMove($svnCd, $path, $to, $dryRun);
+				}
 				return true;
 			}
 
 			if (!empty($this->params['git'])) {
 				return $this->_gitMove($gitCd, $path, $to);
+			}
+
+			if (!empty($this->params['svn'])) {
+				return $this->_svnMove($svnCd, $path, $to);
 			}
 
 			if (is_dir($path)) {
@@ -212,6 +225,8 @@ class StageTask extends Shell {
 		if ($isMove) {
 			if (!empty($this->params['git'])) {
 				$this->_gitMove($gitCd, $path, $to);
+			} else if (!empty($this->params['svn'])) {
+				$this->_svnMove($svnCd, $path, $to);
 			} else {
 				unlink($path);
 			}
@@ -398,4 +413,22 @@ class StageTask extends Shell {
 		return true;
 	}
 
+	/**
+	 * Moves files or folders using GIT.
+	 *
+	 * @param string $svnCd The `cd` command that changes into the files/folder parent directory
+	 * @param string $from The source path
+	 * @param string $to The target path
+	 * @return bool
+	 */
+	protected function _svnMove($svnCd, $from, $to) {
+		$root = !empty($this->params['root']) ? $this->params['root'] : $this->args[0];
+		if (!file_exists(dirname($to))) {
+			$this->_makeDir(dirname($to));
+			exec('cd ' . $root . ' && svn add * --force');
+		}
+		exec($svnCd . 'svn mv --force ' . escapeshellarg($from) . ' ' . escapeshellarg($to));
+
+		return true;
+	}
 }

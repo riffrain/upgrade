@@ -45,6 +45,10 @@ class BaseTask extends Shell {
 					'help' => 'Perform git operations. eg. git mv instead of just moving files.',
 					'boolean' => true,
 				],
+				'svn' => [
+					'help' => 'Perform Subversion operations. eg. svn mv instead of just moving files.',
+					'boolean' => true,
+				],
 				'namespace' => [
 					'help' => 'Set the base namespace you want to use. Defaults to App or the plugin name.',
 					'default' => '',
