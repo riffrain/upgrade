@@ -18,6 +18,8 @@ use Cake\Console\Shell;
 
 /**
  * Create and setup missing files and folders via app repo.
+ *
+ * @property \Cake\Upgrade\Shell\Task\StageTask $Stage
  */
 class SkeletonTask extends BaseTask {
 
@@ -59,10 +61,12 @@ class SkeletonTask extends BaseTask {
 			'config' . DS . 'bootstrap.php',
 			'config' . DS . 'bootstrap_cli.php',
 			'config' . DS . 'paths.php',
+			'config' . DS . 'requirements.php',
 			'config' . DS . 'routes.php',
 			'tests' . DS . 'bootstrap.php',
 			'src' . DS . 'Application.php',
 			'src' . DS . 'View' . DS . 'AppView.php',
+			'src' . DS . 'View' . DS . 'AjaxView.php',
 			'src' . DS . 'Template' . DS . 'Error' . DS . 'error400.ctp',
 			'src' . DS . 'Template' . DS . 'Error' . DS . 'error500.ctp',
 			'src' . DS . 'Template' . DS . 'Layout' . DS . 'error.ctp',

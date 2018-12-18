@@ -17,11 +17,11 @@ namespace Cake\Upgrade\Shell\Task;
 use Cake\Utility\Inflector;
 
 /**
- * Make Model classes to Table classes.
+ * Make Table classes build Entity classes.
  *
  * @property \Cake\Upgrade\Shell\Task\StageTask $Stage
  */
-class ModelToTableTask extends BaseTask {
+class TableToEntityTask extends BaseTask {
 
 	use ChangeTrait;
 	use HelperTrait;
@@ -39,30 +39,56 @@ class ModelToTableTask extends BaseTask {
 	 */
 	protected function _process($path) {
 		$normalizedPath = str_replace(DS, '/', $path);
-		if (!preg_match('#/Model/([a-z0-9]+?)(Test)*\.php#i', $normalizedPath, $matches)) {
+
+		if (!preg_match('#/Model/Table/([a-z0-9]+?)Table\.php#i', $normalizedPath, $matches)) {
 			return false;
 		}
-
 		$modelClass = $matches[1];
-		$tableClass = Inflector::pluralize($modelClass) . 'Table';
 
-		$new = str_replace(DS . 'Model' . DS . $modelClass, DS . 'Model' . DS . 'Table' . DS . $tableClass, $path);
+		$entityClass = Inflector::singularize($modelClass);
 
-		$original = $contents = $this->Stage->source($path);
+		$new = str_replace(DS . 'Model' . DS . 'Table' . DS . $modelClass . 'Table', DS . 'Model' . DS . 'Entity' . DS . $entityClass, $path);
+		if (file_exists($new)) {
+		    return false;
+		}
 
-		$plugin = !empty($this->params['plugin']) ? $this->params['plugin'] : $this->params['namespace'];
-		$contents = str_replace('class ' . $modelClass . ' extends ' . $plugin . 'AppModel', 'class ' . $tableClass . ' extends Table', $contents);
-		$contents = str_replace('class ' . $modelClass . ' extends AppModel', 'class ' . $tableClass . ' extends Table', $contents);
+		$namespace = $this->_getNamespace($path);
 
-		$contents = str_replace('use App\Model\AppModel;', 'use Cake\ORM\Table;', $contents);
+		$content = <<<TXT
+<?php
+namespace $namespace\Model\Entity;
 
-		$contents = str_replace('class ' . $modelClass . 'Test extends', 'class ' . $tableClass . 'Test extends', $contents);
+use Tools\Model\Entity\Entity;
 
-		$contents = preg_replace('#\bnamespace ([a-z\\\\]+)\\\\Model;#i', 'namespace \1\Model\Table;', $contents);
+/**
+ * @property string \$id
+ */
+class $entityClass extends Entity {
 
-		$changed = $this->Stage->change($path, $original, $contents);
-		$moved = $this->Stage->move($path, $new);
-		return $changed & $moved;
+    /**
+     * Fields that can be mass assigned using newEntity() or patchEntity().
+     *
+     * Note that when '*' is set to true, this allows all unspecified fields to
+     * be mass assigned. For security purposes, it is advised to set '*' to false
+     * (or remove it), and explicitly make individual fields accessible as needed.
+     *
+     * @var array
+     */
+    protected \$_accessible = [
+        '*' => true,
+        'id' => false,
+    ];
+
+}
+
+TXT;
+
+		$dir = dirname($new);
+		if (!is_dir($dir)) {
+			mkdir($dir, 0664, true);
+		}
+
+		return (bool)file_put_contents($new, $content);
 	}
 
 	/**
@@ -83,24 +109,12 @@ class ModelToTableTask extends BaseTask {
 			return false;
 		}
 
-		foreach (array_keys($this->_moves()) as $substr) {
-			if (strpos($relativeFromRoot, DS . $substr . DS) !== false) {
-				return true;
-			}
+		$from = 'Model' . DS . 'Table' . DS;
+		if (strpos($relativeFromRoot, DS . $from) !== false) {
+			return true;
 		}
 
 		return false;
-	}
-
-	/**
-	 * Key value map of from and to
-	 *
-	 * @return array
-	 */
-	protected function _moves() {
-		return [
-			'Model' => 'Model' . DS . 'Table',
-		];
 	}
 
 	/**
@@ -116,6 +130,18 @@ class ModelToTableTask extends BaseTask {
 					'help' => 'Set an application\'s root path. Not defining it makes the current path the root one.',
 				],
 			]);
+	}
+
+	/**
+	 * @return string
+	 */
+	protected function _getNamespace() {
+		$ns = $this->param('namespace');
+		if (!$ns) {
+			$ns = 'App';
+		}
+
+		return $ns;
 	}
 
 }

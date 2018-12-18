@@ -26,6 +26,7 @@ use Cake\Console\Shell;
 class AppUsesTask extends BaseTask {
 
 	use ChangeTrait;
+	use HelperTrait;
 
 	/**
 	 * @var array

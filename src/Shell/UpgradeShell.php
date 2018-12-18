@@ -20,6 +20,26 @@ use Cake\Utility\Inflector;
 
 /**
  * A shell class to help developers upgrade applications to CakePHP 3.0
+ *
+ * @property \Cake\Upgrade\Shell\Task\LocationsTask $Locations
+ * @property \Cake\Upgrade\Shell\Task\NamespacesTask $Namespaces
+ * @property \Cake\Upgrade\Shell\Task\AppUsesTask $AppUses
+ * @property \Cake\Upgrade\Shell\Task\RenameClassesTask $RenameClasses
+ * @property \Cake\Upgrade\Shell\Task\RenameCollectionsTask $RenameCollections
+ * @property \Cake\Upgrade\Shell\Task\FixturesTask $Fixtures
+ * @property \Cake\Upgrade\Shell\Task\MethodNamesTask $MethodNames
+ * @property \Cake\Upgrade\Shell\Task\MethodSignaturesTask $MethodSignatures
+ * @property \Cake\Upgrade\Shell\Task\StageTask $Stage
+ * @property \Cake\Upgrade\Shell\Task\I18nTask $I18n
+ * @property \Cake\Upgrade\Shell\Task\LocaleTask $Locale
+ * @property \Cake\Upgrade\Shell\Task\TestsTask $Tests
+ * @property \Cake\Upgrade\Shell\Task\SkeletonTask $Skeleton
+ * @property \Cake\Upgrade\Shell\Task\TemplatesTask $Templates
+ * @property \Cake\Upgrade\Shell\Task\PrefixedTemplatesTask $PrefixedTemplates
+ * @property \Cake\Upgrade\Shell\Task\ModelToTableTask $ModelToTable
+ * @property \Cake\Upgrade\Shell\Task\CustomTask $Custom
+ * @property \Cake\Upgrade\Shell\Task\UrlTask $Url
+ * @property \Cake\Upgrade\Shell\Task\CleanupTask $Cleanup
  */
 class UpgradeShell extends Shell {
 
@@ -29,22 +49,24 @@ class UpgradeShell extends Shell {
 	 * @var array
 	 */
 	public $tasks = [
-		'AppUses',
-		'Fixtures',
 		'Locations',
 		'Namespaces',
+		'AppUses',
 		'RenameClasses',
 		'RenameCollections',
-		'Stage',
+		'Fixtures',
 		'MethodNames',
 		'MethodSignatures',
+		'Stage',
 		'I18n',
 		'Locale',
 		'Tests',
+		'FixtureLoading',
 		'Skeleton',
 		'Templates',
 		'PrefixedTemplates',
 		'ModelToTable',
+		'TableToEntity',
 		'Custom',
 		'Url',
 		'Cleanup',
@@ -117,7 +139,18 @@ class UpgradeShell extends Shell {
 			$className = ucfirst(Inflector::camelize($name));
 			$all[$name] = $className;
 		}
-		return $all;
+
+		$result = [];
+		foreach ($this->tasks as $prio => $null) {
+			$prio = Inflector::underscore($prio);
+			if (isset($all[$prio])) {
+				$result[$prio] = $all[$prio];
+			}
+		}
+
+		$result += $all;
+
+		return $result;
 	}
 
 	/**
@@ -166,6 +199,10 @@ class UpgradeShell extends Shell {
 				'help' => 'Update test cases regarding fixtures.',
 				'parser' => $this->I18n->getOptionParser(),
 			])
+			->addSubcommand('fixture_loading', [
+				'help' => 'Update test cases regarding fixture loading.',
+				'parser' => $this->I18n->getOptionParser(),
+			])
 			->addSubcommand('templates', [
 				'help' => 'Update view templates.',
 				'parser' => $this->Templates->getOptionParser(),
@@ -184,6 +221,10 @@ class UpgradeShell extends Shell {
 			])
 			->addSubcommand('model_to_table', [
 				'help' => 'Make models to tables.',
+				'parser' => $this->ModelToTable->getOptionParser(),
+			])
+			->addSubcommand('table_to_entity', [
+				'help' => 'Make entities from tables.',
 				'parser' => $this->ModelToTable->getOptionParser(),
 			])
 			->addSubcommand('prefixed_templates', [
@@ -219,7 +260,7 @@ class UpgradeShell extends Shell {
 			]);
 
 		return $parser->addSubcommand('all', [
-			'help' => 'Run all tasks expect for skeleton. That task should only be run manually, and only for apps (not plugins).',
+			'help' => 'Run all tasks except for skeleton. That task should only be run manually, and only for apps (not plugins).',
 			'parser' => $allParser,
 		]);
 	}

@@ -18,6 +18,8 @@ use Cake\Utility\Inflector;
 
 /**
  * Updates fixtures for 3.0
+ *
+ * @property \Cake\Upgrade\Shell\Task\StageTask $Stage
  */
 class FixturesTask extends BaseTask {
 
@@ -109,6 +111,18 @@ class FixturesTask extends BaseTask {
 			if (count($constraints)) {
 				$out['_constraints'] = $constraints;
 			}
+
+			// Shim required type index.
+			if (!empty($out['_indexes'])) {
+			    foreach ($out['_indexes'] as $i => $index) {
+					if (isset($index['unique']) && !$index['unique']) {
+						unset($out['_indexes'][$i]['unique']);
+					}
+					if (!isset($index['type'])) {
+						$out['_indexes'][$i]['type'] = 'index';
+					}
+				}
+		    }
 
 			// Process table parameters
 			if (isset($data['tableParameters'])) {

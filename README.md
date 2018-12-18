@@ -1,13 +1,27 @@
 # CakePHP Upgrade tool 
 [![Build Status](https://api.travis-ci.org/dereuromark/upgrade.svg?branch=develop)](https://travis-ci.org/dereuromark/upgrade)
-[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.txt)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
 
-Upgrade tools for CakePHP meant to facilitate migrating from CakePHP 2.x to 3.x.
+Upgrade tool as standalone application for CakePHP meant to facilitate migrating from CakePHP 2.x to 3.x.
+
+It also supports the minor upgrades in 3.x - up until currently 3.6+.
 
 **Warning** This tool is still under development and doesn't handle all aspects of migrating.
 
+--- 
+**Info** Please look into [this article](https://www.dereuromark.de/2018/03/14/cakephp-3-6-is-coming/) for Upgrading applications for 3.6+. The new tool rector seems to be very promising.
+
+--- 
+
+
+Note: When migrating from 1.x to 2.x you might want to look in the old [cakephp-upgrade plugin](https://github.com/dereuromark/cakephp-upgrade) instead.
+
+
 ## Installation
+
+This plugin is standalone. Do not try to mix this with your existing app. Instead, put it somewhere completely separate from it.
+Best to clone it (git clone ....).
 
 After downloading/cloning the upgrade tool, you need to install dependencies with `composer`
 
@@ -21,8 +35,11 @@ Once dependencies are installed you can start using the `upgrade` shell.
 ## IMPORTANT NOTICE
 
 This tool is a split-off off the original CakePHP upgrade tool and provides additional fixers:
+- Templates
+- Url
 - Locale (fixing locale files)
 - Model to Table (making the model files to Table class files)
+- FixtureLoading
 - Custom (tons of custom fixes)
 
 Feel free to manually port those things back into the core one.
@@ -43,6 +60,12 @@ which is probably the way most people will want to use it.
 Additionally the second command would run the `skeleton` task on `/home/mark/Sites/my-app`.
 This command is not included in `all` as it is only necessary for apps. Plugins don't need it.
 
+For plugins, point it to the root and use the `-p` plugin syntax:
+```bash
+// Upgrading 2.x /home/mark/Sites/my-app/Plugin/MyPlugin/ 
+bin/cake upgrade all -p MyPlugin /home/mark/Sites/my-app
+```
+
 It is recommended that you keep your application in version control, and keep
 backups of before using the upgrade tool.
 
@@ -61,42 +84,11 @@ Once these three commands have been run, you can use the other commands in any o
 The `all` command already used the right order by default.
 
 ## Tasks Available
+For detailed task descriptions and usage see [docs](docs).
 
-### locations
-Move files/directories around. Run this *before* adding namespaces with the namespaces command.
+Also note the [wiki](https://github.com/dereuromark/upgrade/wiki) with more recent tips.
 
-### namespaces
-Add namespaces to files based on their file path. Only run this *after* you have moved files.
 
-### app_uses
-Replace App::uses() with use statements
-
-### rename_classes
-Rename classes that have been moved/renamed. Run after replacing App::uses().
-
-### rename_collections
-Rename HelperCollection, ComponentCollection, and TaskCollection. Will also
-rename component constructor arguments and \_Collection properties on all
-objects.
-
-### method_names
-Updates the method names for a number of methods.
-
-### method_signatures
-Updates the method signatures for a number of methods.
-
-### fixtures
-Update fixtures to use new index/constraint features. This is necessary before running tests.
-
-### tests
-Update test cases regarding fixtures.
-
-### i18n
-Update translation functions regarding placeholders.
-
-### skeleton
-Add basic skeleton files and folders from the "app" repository.
-
-### prefixed_templates
-Move view templates for prefixed actions to prefix subfolder. eg. Users/admin_index.ctp becomes Admin/Users/index.ctp.
-By default `admin` prefix is handled, you can run this task for other routing prefixes using `--prefix=other` as well.
+## Using Tagged Releases
+For simplicity the tool uses the latest dev-master branches of framework and app repos (or you can get there using `composer update`).
+If you want to use the stable releases instead, just switch those in the composer.json and then run `composer update` again.

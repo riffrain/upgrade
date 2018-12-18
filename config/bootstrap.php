@@ -12,7 +12,6 @@
  * @since         CakePHP(tm) v 0.10.8.2117
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace App\Config;
 
 	/**
 	 * Configure paths required to find CakePHP + general filepath
@@ -51,10 +50,11 @@ use Cake\Cache\Cache;
 use Cake\Console\ConsoleErrorHandler;
 use Cake\Core\Configure;
 use Cake\Core\Configure\Engine\PhpConfig;
+use Cake\Core\Plugin;
 use Cake\Datasource\ConnectionManager;
 use Cake\Error\ErrorHandler;
 use Cake\Log\Log;
-use Cake\Network\Email\Email;
+use Cake\Mailer\Email;
 
 /**
  * Read configuration file and inject configuration into various
@@ -73,7 +73,7 @@ try {
 	// shared configuration.
 	// Configure::load('app.local', 'default');
 } catch (\Exception $e) {
-	die('Unable to load config/app.php. Create it by copying config/app.default.php to config/app.php.');
+	exit('Unable to load config/app.php. Create it by copying config/app.default.php to config/app.php.');
 }
 
 Configure::load('app_custom', 'default');
@@ -139,3 +139,5 @@ Log::config(Configure::consume('Log'));
  * Plugin::loadAll(); // Loads all plugins at once
  * Plugin::load('DebugKit'); //Loads a single plugin named DebugKit
  */
+
+Plugin::load('IdeHelper');

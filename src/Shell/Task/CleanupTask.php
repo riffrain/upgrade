@@ -19,10 +19,13 @@ use RecursiveDirectoryIterator;
 
 /**
  * Move files around as directories have changed in 3.0
+ *
+ * @property \Cake\Upgrade\Shell\Task\StageTask $Stage
  */
 class CleanupTask extends LocationsTask {
 
 	use ChangeTrait;
+	use HelperTrait;
 
 	/**
 	 * @var array
@@ -83,9 +86,7 @@ class CleanupTask extends LocationsTask {
 	 * @return bool
 	 */
 	protected function _shouldProcess($path) {
-		$root = !empty($this->params['root']) ? $this->params['root'] : $this->args[0];
-		$root = rtrim($root, DS);
-		$relativeFromRoot = str_replace($root, '', $path);
+		$relativeFromRoot = $this->_getRelativePath($path);
 
 		if (strpos($relativeFromRoot, DS . 'Plugin' . DS) || strpos($relativeFromRoot, DS . 'plugins' . DS)) {
 			return false;
